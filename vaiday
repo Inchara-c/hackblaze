@@ -1,0 +1,1048 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Vaidya: Ayurveda Knowledge Assistant</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100%;
+            color: #2d3748;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .app-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .welcome-text {
+            font-size: 1.2rem;
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .upload-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .qa-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-area {
+            border: 3px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #f7fafc;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #e6fffa;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #a0aec0;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #4a5568;
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .processing-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .processing-status.processing {
+            background: #bee3f8;
+            color: #2b6cb0;
+            display: block;
+        }
+
+        .processing-status.success {
+            background: #c6f6d5;
+            color: #22543d;
+            display: block;
+        }
+
+        .processing-status.error {
+            background: #fed7d7;
+            color: #c53030;
+            display: block;
+        }
+
+        .question-form {
+            margin-bottom: 25px;
+        }
+
+        .question-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        .question-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .ask-btn {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .ask-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
+        }
+
+        .ask-btn:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        .answer-section {
+            margin-top: 25px;
+        }
+
+        .answer-card {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .answer-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .context-section {
+            background: #edf2f7;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .context-label {
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+
+        .context-text {
+            font-size: 0.9rem;
+            color: #718096;
+            font-style: italic;
+        }
+
+        .history-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        .history-item {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .history-question {
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .history-answer {
+            color: #4a5568;
+            font-size: 0.95rem;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-document-message {
+            text-align: center;
+            color: #a0aec0;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .app-title {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="container">
+   <header class="header">
+    <h1 class="app-title" id="appTitle">AI Vaidya: Ayurveda Knowledge Assistant</h1>
+    <p class="welcome-text" id="welcomeMessage">Upload an Ayurveda text and ask questions about traditional medicine wisdom</p>
+   </header>
+   <main class="main-content">
+    <section class="upload-section">
+     <h2 class="section-title">📚 Document Upload</h2>
+     <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">
+       📄
+      </div>
+      <div class="upload-text" id="uploadInstruction">
+       Upload PDF documents (books, research papers)
+      </div><button class="upload-btn" onclick="document.getElementById('fileInput').click()"> Choose PDF File </button> <input type="file" id="fileInput" class="file-input" accept=".pdf">
+     </div>
+     <div class="processing-status" id="processingStatus"></div>
+    </section>
+    <section class="qa-section">
+     <h2 class="section-title">🤖 Ask AI Vaidya</h2><!-- API Configuration -->
+     <div class="api-config" id="apiConfig">
+      <h3 style="margin-bottom: 15px; color: #4a5568;">🔧 AI Configuration</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+       <div><label style="display: block; margin-bottom: 5px; font-weight: bold;">AI Provider:</label> <select id="apiProvider" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px;"> <option value="huggingface">Hugging Face (Free)</option> <option value="openai">OpenAI GPT</option> <option value="gemini">Google Gemini</option> <option value="local">Local Processing</option> </select>
+       </div>
+       <div><label style="display: block; margin-bottom: 5px; font-weight: bold;">Language:</label> <select id="targetLanguage" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px;"> <option value="english">English</option> <option value="hindi">Hindi (हिंदी)</option> <option value="sanskrit">Sanskrit (संस्कृत)</option> <option value="tamil">Tamil (தமிழ்)</option> <option value="bengali">Bengali (বাংলা)</option> </select>
+       </div>
+      </div>
+      <div id="apiKeySection" style="margin-bottom: 20px; display: none;"><label style="display: block; margin-bottom: 5px; font-weight: bold;">API Key:</label> <input type="password" id="apiKey" placeholder="Enter your API key" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;"> <small style="color: #718096;">Your API key is stored locally and never sent to our servers</small>
+      </div>
+     </div>
+     <form class="question-form" id="questionForm"><textarea class="question-input" id="questionInput" placeholder="Ask about Ayurveda concepts, doshas, herbs, treatments..." rows="3" disabled></textarea> <button type="submit" class="ask-btn" id="askBtn" disabled> Ask Question </button>
+     </form>
+     <div class="answer-section" id="answerSection">
+      <div class="no-document-message">
+       Please upload an Ayurveda document first to start asking questions.
+      </div>
+     </div>
+    </section>
+   </main>
+   <section class="history-section">
+    <h2 class="section-title">📋 Question History</h2>
+    <div id="historyContainer">
+     <div class="no-document-message">
+      Your question history will appear here after you start asking questions.
+     </div>
+    </div>
+   </section>
+  </div>
+  <script>
+        // Configuration and state
+        let documentText = '';
+        let documentChunks = [];
+        let qaHistory = [];
+        
+        const defaultConfig = {
+            app_title: "AI Vaidya: Ayurveda Knowledge Assistant",
+            welcome_message: "Upload an Ayurveda text and ask questions about traditional medicine wisdom",
+            upload_instruction: "Upload PDF documents (books, research papers)",
+            api_provider: "huggingface",
+            enable_translation: "true",
+            target_language: "english"
+        };
+
+        // Data SDK handler
+        const dataHandler = {
+            onDataChanged(data) {
+                qaHistory = data || [];
+                renderHistory();
+            }
+        };
+
+        // Element SDK implementation
+        const element = {
+            defaultConfig,
+            onConfigChange: async (config) => {
+                const appTitle = document.getElementById('appTitle');
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                const uploadInstruction = document.getElementById('uploadInstruction');
+                
+                if (appTitle) {
+                    appTitle.textContent = config.app_title || defaultConfig.app_title;
+                }
+                if (welcomeMessage) {
+                    welcomeMessage.textContent = config.welcome_message || defaultConfig.welcome_message;
+                }
+                if (uploadInstruction) {
+                    uploadInstruction.textContent = config.upload_instruction || defaultConfig.upload_instruction;
+                }
+            },
+            mapToCapabilities: (config) => ({
+                recolorables: [
+                    {
+                        get: () => config.primary_color || "#667eea",
+                        set: (value) => {
+                            config.primary_color = value;
+                            window.elementSdk.setConfig({ primary_color: value });
+                        }
+                    },
+                    {
+                        get: () => config.background_color || "#f7fafc",
+                        set: (value) => {
+                            config.background_color = value;
+                            window.elementSdk.setConfig({ background_color: value });
+                        }
+                    }
+                ],
+                borderables: [],
+                fontEditable: {
+                    get: () => config.font_family || "Segoe UI",
+                    set: (value) => {
+                        config.font_family = value;
+                        window.elementSdk.setConfig({ font_family: value });
+                    }
+                },
+                fontSizeable: {
+                    get: () => config.font_size || 16,
+                    set: (value) => {
+                        config.font_size = value;
+                        window.elementSdk.setConfig({ font_size: value });
+                    }
+                }
+            }),
+            mapToEditPanelValues: (config) => new Map([
+                ["app_title", config.app_title || defaultConfig.app_title],
+                ["welcome_message", config.welcome_message || defaultConfig.welcome_message],
+                ["upload_instruction", config.upload_instruction || defaultConfig.upload_instruction]
+            ])
+        };
+
+        // Initialize SDKs
+        async function initializeApp() {
+            try {
+                if (window.elementSdk) {
+                    await window.elementSdk.init(element);
+                }
+                
+                if (window.dataSdk) {
+                    const result = await window.dataSdk.init(dataHandler);
+                    if (!result.isOk) {
+                        console.error('Failed to initialize data SDK');
+                    }
+                }
+                
+                setupEventListeners();
+            } catch (error) {
+                console.error('Failed to initialize app:', error);
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadArea = document.getElementById('uploadArea');
+            const questionForm = document.getElementById('questionForm');
+            const apiProvider = document.getElementById('apiProvider');
+            const targetLanguage = document.getElementById('targetLanguage');
+
+            // File upload handling
+            fileInput.addEventListener('change', handleFileUpload);
+            
+            // Drag and drop
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type === 'application/pdf') {
+                    handleFile(files[0]);
+                }
+            });
+
+            // Question form
+            questionForm.addEventListener('submit', handleQuestionSubmit);
+            
+            // API provider change
+            apiProvider.addEventListener('change', handleApiProviderChange);
+            
+            // Language change
+            targetLanguage.addEventListener('change', handleLanguageChange);
+            
+            // Load saved settings
+            loadSavedSettings();
+        }
+
+        // Handle API provider change
+        function handleApiProviderChange() {
+            const apiProvider = document.getElementById('apiProvider').value;
+            const apiKeySection = document.getElementById('apiKeySection');
+            
+            if (apiProvider === 'openai' || apiProvider === 'gemini') {
+                apiKeySection.style.display = 'block';
+                const apiKey = document.getElementById('apiKey');
+                apiKey.placeholder = apiProvider === 'openai' ? 'Enter OpenAI API key' : 'Enter Gemini API key';
+            } else {
+                apiKeySection.style.display = 'none';
+            }
+            
+            // Save setting
+            localStorage.setItem('ai_vaidya_api_provider', apiProvider);
+            
+            if (window.elementSdk) {
+                window.elementSdk.setConfig({ api_provider: apiProvider });
+            }
+        }
+
+        // Handle language change
+        function handleLanguageChange() {
+            const targetLanguage = document.getElementById('targetLanguage').value;
+            localStorage.setItem('ai_vaidya_language', targetLanguage);
+            
+            if (window.elementSdk) {
+                window.elementSdk.setConfig({ target_language: targetLanguage });
+            }
+        }
+
+        // Load saved settings
+        function loadSavedSettings() {
+            const savedProvider = localStorage.getItem('ai_vaidya_api_provider') || 'huggingface';
+            const savedLanguage = localStorage.getItem('ai_vaidya_language') || 'english';
+            const savedApiKey = localStorage.getItem('ai_vaidya_api_key') || '';
+            
+            document.getElementById('apiProvider').value = savedProvider;
+            document.getElementById('targetLanguage').value = savedLanguage;
+            document.getElementById('apiKey').value = savedApiKey;
+            
+            handleApiProviderChange();
+        }
+
+        // Save API key
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const apiKeyInput = document.getElementById('apiKey');
+                if (apiKeyInput) {
+                    apiKeyInput.addEventListener('change', () => {
+                        localStorage.setItem('ai_vaidya_api_key', apiKeyInput.value);
+                    });
+                }
+            }, 100);
+        });
+
+        // Handle file upload
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                await handleFile(file);
+            } else {
+                showStatus('Please select a valid PDF file.', 'error');
+            }
+        }
+
+        // Process PDF file
+        async function handleFile(file) {
+            showStatus('Processing PDF document...', 'processing');
+            
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                
+                let fullText = '';
+                
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullText += pageText + '\n';
+                }
+                
+                documentText = fullText;
+                documentChunks = createTextChunks(fullText);
+                
+                showStatus(`Successfully processed ${file.name} (${pdf.numPages} pages)`, 'success');
+                enableQuestionInput();
+                
+            } catch (error) {
+                console.error('Error processing PDF:', error);
+                showStatus('Error processing PDF. Please try another file.', 'error');
+            }
+        }
+
+        // Create text chunks for better retrieval
+        function createTextChunks(text, chunkSize = 500) {
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+            const chunks = [];
+            let currentChunk = '';
+            
+            for (const sentence of sentences) {
+                if (currentChunk.length + sentence.length > chunkSize && currentChunk.length > 0) {
+                    chunks.push(currentChunk.trim());
+                    currentChunk = sentence;
+                } else {
+                    currentChunk += (currentChunk ? '. ' : '') + sentence;
+                }
+            }
+            
+            if (currentChunk.trim()) {
+                chunks.push(currentChunk.trim());
+            }
+            
+            return chunks;
+        }
+
+        // Show processing status
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('processingStatus');
+            statusDiv.textContent = message;
+            statusDiv.className = processing-status ${type};
+            
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Enable question input after document upload
+        function enableQuestionInput() {
+            const questionInput = document.getElementById('questionInput');
+            const askBtn = document.getElementById('askBtn');
+            const answerSection = document.getElementById('answerSection');
+            
+            questionInput.disabled = false;
+            askBtn.disabled = false;
+            answerSection.innerHTML = '<div class="no-document-message">Ask your first question about the uploaded document!</div>';
+        }
+
+        // Handle question submission
+        async function handleQuestionSubmit(event) {
+            event.preventDefault();
+            
+            const questionInput = document.getElementById('questionInput');
+            const question = questionInput.value.trim();
+            
+            if (!question) return;
+            if (!documentText) {
+                showStatus('Please upload a document first.', 'error');
+                return;
+            }
+            
+            const askBtn = document.getElementById('askBtn');
+            askBtn.disabled = true;
+            askBtn.innerHTML = '<span class="loading-spinner"></span> Processing...';
+            
+            try {
+                const answer = await processQuestion(question);
+                await saveQA(question, answer.text, answer.context);
+                displayAnswer(question, answer.text, answer.context);
+                questionInput.value = '';
+            } catch (error) {
+                console.error('Error processing question:', error);
+                displayAnswer(question, 'Sorry, I encountered an error processing your question. Please try again.', '');
+            }
+            
+            askBtn.disabled = false;
+            askBtn.innerHTML = 'Ask Question';
+        }
+
+        // Process question using AI APIs or local processing
+        async function processQuestion(question) {
+            const relevantChunks = findRelevantChunks(question, documentChunks);
+            const context = relevantChunks.slice(0, 3).join('\n\n');
+            
+            const apiProvider = document.getElementById('apiProvider').value;
+            const targetLanguage = document.getElementById('targetLanguage').value;
+            
+            let answer;
+            try {
+                switch (apiProvider) {
+                    case 'openai':
+                        answer = await processWithOpenAI(question, context);
+                        break;
+                    case 'gemini':
+                        answer = await processWithGemini(question, context);
+                        break;
+                    case 'huggingface':
+                        answer = await processWithHuggingFace(question, context);
+                        break;
+                    default:
+                        answer = generateLocalAnswer(question, context);
+                }
+                
+                // Translate if needed
+                if (targetLanguage !== 'english') {
+                    answer = await translateText(answer, targetLanguage);
+                }
+                
+            } catch (error) {
+                console.error('AI processing error:', error);
+                answer = generateLocalAnswer(question, context);
+            }
+            
+            return {
+                text: answer,
+                context: context.substring(0, 500) + (context.length > 500 ? '...' : '')
+            };
+        }
+
+        // OpenAI GPT Integration
+        async function processWithOpenAI(question, context) {
+            const apiKey = document.getElementById('apiKey').value;
+            if (!apiKey) {
+                throw new Error('OpenAI API key required');
+            }
+
+            const prompt = `Based on the following Ayurveda text context, answer the question concisely and accurately. Focus only on information from the provided context.
+
+Context: ${context}
+
+Question: ${question}
+
+Answer:`;
+
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+            {
+                role: 'system',
+                content: 'You are an expert in Ayurveda. Answer questions based only on the provided context. Be concise and accurate.'
+            },
+            {
+                role: 'user',
+                content: prompt
+            }
+        ],
+        max_tokens: 300,
+        temperature: 0.3
+    })
+});
+
+const data = await response.json();
+if (data.error) {
+    throw new Error(data.error.message);
+}
+
+return data.choices[0].message.content.trim();
+}
+
+// Google Gemini Integration
+async function processWithGemini(question, context) {
+    const apiKey = document.getElementById('apiKey').value;
+    if (!apiKey) {
+        throw new Error('Gemini API key required');
+    }
+
+    const prompt = `Based on the following Ayurveda text context, answer the question concisely and accurately. Focus only on information from the provided context.
+
+Context: ${context}
+
+Question: ${question}
+
+Answer:`;
+
+    const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{ text: prompt }]
+                }],
+                generationConfig: {
+                    maxOutputTokens: 300,
+                    temperature: 0.3
+                }
+            })
+        }
+    );
+
+    const data = await response.json();
+    if (data.error) {
+        throw new Error(data.error.message);
+    }
+
+    return data.candidates[0].content.parts[0].text.trim();
+}
+
+// Hugging Face Integration (Free)
+async function processWithHuggingFace(question, context) {
+    const prompt = `Context: ${context.substring(0, 1000)}
+
+Question: ${question}
+
+Based on the Ayurveda context above, provide a concise answer:`;
+
+    try {
+        const response = await fetch('https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                inputs: prompt,
+                parameters: {
+                    max_length: 200,
+                    temperature: 0.3,
+                    do_sample: true
+                }
+            })
+        });
+
+        const data = await response.json();
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        return data[0]?.generated_text?.replace(prompt, '').trim() || generateLocalAnswer(question, context);
+    } catch (error) {
+        return generateLocalAnswer(question, context);
+    }
+}
+
+// Enhanced local answer generation
+function generateLocalAnswer(question, context) {
+    if (!context.trim()) {
+        return "I couldn't find specific information about your question in the uploaded document. Please try rephrasing your question or check if the topic is covered in the document.";
+    }
+
+    const questionLower = question.toLowerCase();
+    const sentences = context.split(/[.!?]+/).filter(s => s.trim().length > 20);
+
+    const scoredSentences = sentences.map(sentence => {
+        const sentenceLower = sentence.toLowerCase();
+        let score = 0;
+
+        const questionWords = questionLower.split(/\s+/).filter(w => w.length > 2);
+        questionWords.forEach(word => {
+            if (sentenceLower.includes(word)) {
+                score += 2;
+            }
+        });
+
+        const ayurvedaTerms = ['dosha', 'vata', 'pitta', 'kapha', 'ayurveda', 'herb', 'treatment', 'medicine', 'healing'];
+        ayurvedaTerms.forEach(term => {
+            if (sentenceLower.includes(term)) {
+                score += 1;
+            }
+        });
+
+        return { sentence: sentence.trim(), score };
+    });
+
+    const topSentences = scoredSentences
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3)
+        .map(item => item.sentence);
+
+    if (topSentences.length === 0) {
+        return context.substring(0, 300) + (context.length > 300 ? '...' : '');
+    }
+
+    return topSentences.join('. ') + '.';
+}
+
+// Translation function
+async function translateText(text, targetLanguage) {
+    if (targetLanguage === 'english') return text;
+
+    const translations = {
+        hindi: {
+            'doshas': 'दोष',
+            'vata': 'वात',
+            'pitta': 'पित्त',
+            'kapha': 'कफ',
+            'ayurveda': 'आयुर्वेद',
+            'herbs': 'जड़ी-बूटियां',
+            'treatment': 'उपचार',
+            'medicine': 'दवा',
+            'healing': 'चिकित्सा'
+        },
+        sanskrit: {
+            'doshas': 'दोषाः',
+            'vata': 'वातः',
+            'pitta': 'पित्तम्',
+            'kapha': 'कफः',
+            'ayurveda': 'आयुर्वेदः',
+            'herbs': 'औषधिः',
+            'treatment': 'चिकित्सा',
+            'medicine': 'औषधम्',
+            'healing': 'स्वास्थ्यम्'
+        }
+    };
+
+    let translatedText = text;
+
+    if (translations[targetLanguage]) {
+        Object.entries(translations[targetLanguage]).forEach(([english, translated]) => {
+            const regex = new RegExp(`\\b${english}\\b`, 'gi');
+            translatedText = translatedText.replace(regex, translated);
+        });
+    }
+
+    return translatedText;
+}
+
+// Find relevant text chunks
+function findRelevantChunks(question, chunks) {
+    const questionWords = question.toLowerCase()
+        .replace(/[^\w\s]/g, '')
+        .split(/\s+/)
+        .filter(word => word.length > 2);
+
+    const scoredChunks = chunks.map(chunk => {
+        const chunkLower = chunk.toLowerCase();
+        let score = 0;
+
+        questionWords.forEach(word => {
+            const regex = new RegExp(`\\b${word}\\b`, 'gi');
+            const matches = chunkLower.match(regex);
+            if (matches) {
+                score += matches.length;
+            }
+        });
+
+        return { chunk, score };
+    });
+
+    return scoredChunks
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map(item => item.chunk);
+}
+
+
+        // Generate answer from context
+        function generateAnswer(question, context) {
+            if (!context.trim()) {
+                return "I couldn't find specific information about your question in the uploaded document. Please try rephrasing your question or check if the topic is covered in the document.";
+            }
+            
+            // Extract relevant sentences from context
+            const sentences = context.split(/[.!?]+/).filter(s => s.trim().length > 20);
+            const questionWords = question.toLowerCase().split(/\s+/);
+            
+            const relevantSentences = sentences.filter(sentence => {
+                const sentenceLower = sentence.toLowerCase();
+                return questionWords.some(word => sentenceLower.includes(word));
+            });
+            
+            if (relevantSentences.length === 0) {
+                return context.substring(0, 300) + (context.length > 300 ? '...' : '');
+            }
+            
+            return relevantSentences.slice(0, 3).join('. ').trim() + '.';
+        }
+
+        // Save Q&A to data storage
+        async function saveQA(question, answer, context) {
+            if (!window.dataSdk) return;
+            
+            const apiProvider = document.getElementById('apiProvider').value;
+            const targetLanguage = document.getElementById('targetLanguage').value;
+            
+            const qaRecord = {
+                id: Date.now().toString(),
+                question: question,
+                answer: answer,
+                context: context,
+                language: targetLanguage,
+                api_provider: apiProvider,
+                timestamp: new Date().toISOString()
+            };
+            
+            const result = await window.dataSdk.create(qaRecord);
+            if (!result.isOk) {
+                console.error('Failed to save Q&A:', result.error);
+            }
+        }
+
+        // Display answer in UI
+        function displayAnswer(question, answer, context) {
+            const answerSection = document.getElementById('answerSection');
+            
+            answerSection.innerHTML = `
+                <div class="answer-card">
+                    <div class="answer-text">${answer}</div>
+                    ${context ? `
+                        <div class="context-section">
+                            <div class="context-label">📖 Source Context:</div>
+                            <div class="context-text">${context}</div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // Render question history
+        function renderHistory() {
+            const historyContainer = document.getElementById('historyContainer');
+            
+            if (qaHistory.length === 0) {
+                historyContainer.innerHTML = '<div class="no-document-message">Your question history will appear here after you start asking questions.</div>';
+                return;
+            }
+            
+            const sortedHistory = [...qaHistory].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            historyContainer.innerHTML = sortedHistory.map(qa => {
+                const date = new Date(qa.timestamp).toLocaleDateString();
+                const languageFlag = qa.language === 'hindi' ? '🇮🇳' : qa.language === 'sanskrit' ? '🕉' : qa.language === 'tamil' ? '🇮🇳' : qa.language === 'bengali' ? '🇧🇩' : '🇺🇸';
+                const apiIcon = qa.api_provider === 'openai' ? '🤖' : qa.api_provider === 'gemini' ? '💎' : qa.api_provider === 'huggingface' ? '🤗' : '💻';
+                
+                return `
+                    <div class="history-item">
+                        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 8px;">
+                            <div style="font-size: 0.8rem; color: #718096;">
+                                ${date} ${languageFlag} ${apiIcon}
+                            </div>
+                        </div>
+                        <div class="history-question">Q: ${qa.question}</div>
+                        <div class="history-answer">A: ${qa.answer}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Initialize app when page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99e8348d867ec1c9',t:'MTc2MzE0MTA5Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
