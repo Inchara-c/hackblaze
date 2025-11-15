@@ -1,6 +1,7 @@
 # Endura
 “AI Vaidya: Building an Intelligent Q&amp;A Assistant for Ayurveda Knowledge”
 https://ai-vaidya.my.canva.site/
+
 Problem Statement
 
 In many underserved or rural areas, access to qualified Ayurvedic practitioners is limited. Even for those who have access, personalized guidance (based on one’s prakṛti, imbalances, lifestyle, and symptoms) can be difficult to obtain. Traditional Ayurveda requires deep expertise and time-consuming assessment. As a result:
